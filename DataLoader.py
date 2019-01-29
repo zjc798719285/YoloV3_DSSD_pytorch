@@ -16,6 +16,7 @@ class dataset(Dataset):
         self.label = label
 
 
+
     def augmentImage(self, image, target):
         net_size = 416
         h, w = image.shape[0], image.shape[1]
@@ -102,13 +103,19 @@ class dataset(Dataset):
                                          anchors=np.array([[30, 61], [62, 45], [59, 119]]), nC=7, nG=26, nA=3)
         tx52, ty52, tw52, th52, conf_mask52, obj_mask52, tcls52 = self.build_target(target_=targets_,
                                          anchors=np.array([[10, 13], [16, 30], [33, 23]]), nC=7, nG=52, nA=3)
-        t13 = np.concatenate((tx13, ty13, tw13, th13, conf_mask13, obj_mask13), axis=0)
-        t26 = np.concatenate((tx26, ty26, tw26, th26, conf_mask26, obj_mask26), axis=0)
-        t52 = np.concatenate((tx52, ty52, tw52, th52, conf_mask52, obj_mask52), axis=0)
+        tcoord_13 = np.concatenate((tx13.reshape(-1, 1), ty13.reshape(-1, 1), tw13.reshape(-1, 1),
+                                    th13.reshape(-1, 1), conf_mask13.reshape(-1, 1), obj_mask13.reshape(-1, 1),
+                                    tcls13.reshape(-1, 7)), 1)
+        tcoord_26 = np.concatenate((tx26.reshape(-1, 1), ty26.reshape(-1, 1), tw26.reshape(-1, 1),
+                                    th26.reshape(-1, 1), conf_mask26.reshape(-1, 1), obj_mask26.reshape(-1, 1),
+                                    tcls26.reshape(-1, 7)), 1)
+        tcoord_52 = np.concatenate((tx52.reshape(-1, 1), ty52.reshape(-1, 1), tw52.reshape(-1, 1),
+                                    th52.reshape(-1, 1), conf_mask52.reshape(-1, 1), obj_mask52.reshape(-1, 1),
+                                    tcls52.reshape(-1, 7)), 1)
+        tcoord = np.concatenate((tcoord_13, tcoord_26, tcoord_52), axis=0)
         targets[0:targets_.shape[0], :] = targets_
 
-        return image.astype(np.float32), t13, t26, t52, tcls13.astype(np.float32), \
-               tcls26.astype(np.float32), tcls52.astype(np.float32), targets
+        return image.astype(np.float32), tcoord.astype(np.float32)
 
 
 
